@@ -61,19 +61,19 @@ const Home = () => {
     console.log(`Clicked on ${cardType} card`);
     switch (cardType) {
       case 'expenses':
-        navigate('/tools');
+        navigate('/expense-tracker');
         break;
       case 'investment':
-        navigate('/tools');
+        navigate('/investment-lab');
         break;
       case 'saved':
-        navigate('/tools');
+        navigate('/saving-goals');
         break;
       case 'goals':
-        navigate('/tools');
+        navigate('/saving-goals');
         break;
       case 'leaderboard':
-        navigate('/quests');
+        navigate('/leaderboard');
         break;
       case 'fraud':
         navigate('/learn');

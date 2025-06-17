@@ -11,6 +11,10 @@ import Tools from "./pages/Tools";
 import Quests from "./pages/Quests";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import ExpenseTracker from "./pages/ExpenseTracker";
+import SavingGoals from "./pages/SavingGoals";
+import InvestmentLab from "./pages/InvestmentLab";
+import Leaderboard from "./pages/Leaderboard";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +31,10 @@ const App = () => (
             <Route path="/tools" element={<Tools />} />
             <Route path="/quests" element={<Quests />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/expense-tracker" element={<ExpenseTracker />} />
+            <Route path="/saving-goals" element={<SavingGoals />} />
+            <Route path="/investment-lab" element={<InvestmentLab />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <BottomNavigation />
