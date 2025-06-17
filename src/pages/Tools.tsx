@@ -1,8 +1,12 @@
+
 import { Calculator, Target, TrendingUp, PieChart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Tools = () => {
+  const navigate = useNavigate();
+  
   const tools = [
     {
       id: 'expense-tracker',
@@ -63,7 +67,7 @@ const Tools = () => {
   const handleToolClick = (toolId: string) => {
     const tool = tools.find(t => t.id === toolId);
     if (tool && tool.route) {
-      window.location.href = tool.route;
+      navigate(tool.route);
     }
   };
 
