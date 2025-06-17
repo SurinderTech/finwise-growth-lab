@@ -15,6 +15,9 @@ import ExpenseTracker from "./pages/ExpenseTracker";
 import SavingGoals from "./pages/SavingGoals";
 import InvestmentLab from "./pages/InvestmentLab";
 import Leaderboard from "./pages/Leaderboard";
+import Gamify from "./pages/Gamify";
+import FinancialCalculators from "./pages/FinancialCalculators";
+import GoalTracking from "./pages/GoalTracking";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +38,9 @@ const App = () => (
             <Route path="/saving-goals" element={<SavingGoals />} />
             <Route path="/investment-lab" element={<InvestmentLab />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/gamify" element={<Gamify />} />
+            <Route path="/financial-calculators" element={<FinancialCalculators />} />
+            <Route path="/goal-tracking" element={<GoalTracking />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <BottomNavigation />

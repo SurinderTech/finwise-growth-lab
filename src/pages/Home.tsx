@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { XPBar } from '@/components/XPBar';
 import { CoinDisplay } from '@/components/CoinDisplay';
@@ -57,9 +56,8 @@ const Home = () => {
     reward: 150,
   };
 
-  const handleCardClick = (cardType: string) => {
-    console.log(`Clicked on ${cardType} card`);
-    switch (cardType) {
+  const handleCardClick = (type: string) => {
+    switch (type) {
       case 'expenses':
         navigate('/expense-tracker');
         break;
@@ -70,22 +68,28 @@ const Home = () => {
         navigate('/saving-goals');
         break;
       case 'goals':
-        navigate('/saving-goals');
+        navigate('/goal-tracking');
         break;
       case 'leaderboard':
         navigate('/leaderboard');
         break;
       case 'fraud':
-        navigate('/learn');
+        navigate('/gamify');
         break;
       case 'tutorials':
+        navigate('/gamify');
+        break;
+      case 'assessments':
         navigate('/learn');
         break;
-      case 'knowledge':
-        navigate('/quests');
+      case 'calculators':
+        navigate('/financial-calculators');
+        break;
+      case 'gamify':
+        navigate('/gamify');
         break;
       default:
-        break;
+        console.log(`Clicked: ${type}`);
     }
   };
 

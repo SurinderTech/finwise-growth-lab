@@ -1,4 +1,3 @@
-
 import { Calculator, Target, TrendingUp, PieChart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ const Tools = () => {
       icon: PieChart,
       color: 'from-blue-500 to-blue-600',
       comingSoon: false,
+      route: '/expense-tracker'
     },
     {
       id: 'saving-goals',
@@ -20,6 +20,7 @@ const Tools = () => {
       icon: Target,
       color: 'from-green-500 to-green-600',
       comingSoon: false,
+      route: '/saving-goals'
     },
     {
       id: 'investment-lab',
@@ -28,20 +29,42 @@ const Tools = () => {
       icon: TrendingUp,
       color: 'from-purple-500 to-purple-600',
       comingSoon: false,
+      route: '/investment-lab'
     },
     {
-      id: 'tax-planner',
-      title: '📋 Tax Planner',
-      description: 'Calculate taxes and discover saving opportunities',
+      id: 'financial-calculators',
+      title: '🧮 Financial Calculators',
+      description: 'Interactive tools for financial planning and simulation',
       icon: Calculator,
       color: 'from-orange-500 to-orange-600',
       comingSoon: false,
+      route: '/financial-calculators'
     },
+    {
+      id: 'goal-tracking',
+      title: '🎯 Goal Tracking',
+      description: 'Advanced goal setting and monitoring system',
+      icon: Target,
+      color: 'from-pink-500 to-pink-600',
+      comingSoon: false,
+      route: '/goal-tracking'
+    },
+    {
+      id: 'gamify',
+      title: '🎮 Financial Games',
+      description: 'Learn finance through interactive games and simulations',
+      icon: Calculator,
+      color: 'from-indigo-500 to-indigo-600',
+      comingSoon: false,
+      route: '/gamify'
+    }
   ];
 
   const handleToolClick = (toolId: string) => {
-    console.log(`Opening tool: ${toolId}`);
-    // Here you would navigate to the specific tool
+    const tool = tools.find(t => t.id === toolId);
+    if (tool && tool.route) {
+      window.location.href = tool.route;
+    }
   };
 
   return (
