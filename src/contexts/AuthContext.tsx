@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
         
         // Check if user profile is complete after successful sign up
-        if (event === 'SIGNED_UP' && session?.user) {
+        if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(async () => {
             const { data: profile } = await supabase
               .from('profiles')

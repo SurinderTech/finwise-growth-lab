@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Shield, AlertTriangle, CheckCircle, X, Phone, Mail, Globe, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
+import { Database } from '@/integrations/supabase/types';
+
+type FraudScenarioRow = Database['public']['Tables']['fraud_scenarios']['Row'];
 
 interface FraudScenario {
   id: string;
@@ -47,9 +50,23 @@ export const FraudDetectionGame = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setScenarios(data || []);
-      if (data && data.length > 0) {
-        setCurrentScenario(data[0]);
+      
+      // Transform the data to match our interface
+      const transformedScenarios: FraudScenario[] = (data || []).map((row: FraudScenarioRow) => ({
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        scenario_type: row.scenario_type,
+        content: typeof row.content === 'object' && row.content !== null 
+          ? row.content as { question: string; options: string[]; correct: number; explanation: string; }
+          : { question: '', options: [], correct: 0, explanation: '' },
+        difficulty: row.difficulty || 'beginner',
+        points: row.points || 50
+      }));
+
+      setScenarios(transformedScenarios);
+      if (transformedScenarios.length > 0) {
+        setCurrentScenario(transformedScenarios[0]);
       }
       setLoading(false);
     } catch (error: any) {

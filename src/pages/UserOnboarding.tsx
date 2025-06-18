@@ -13,6 +13,8 @@ import { Progress } from '@/components/ui/progress';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
+type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
+
 const UserOnboarding = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -22,7 +24,7 @@ const UserOnboarding = () => {
     age: '',
     occupation: '',
     monthly_income: '',
-    experience_level: 'beginner',
+    experience_level: 'beginner' as ExperienceLevel,
     risk_tolerance: '5',
     financial_goals: [] as string[],
     phone_number: ''
@@ -159,7 +161,7 @@ const UserOnboarding = () => {
             </div>
             <div>
               <Label htmlFor="experience_level">Financial Experience Level</Label>
-              <Select value={formData.experience_level} onValueChange={(value) => setFormData({ ...formData, experience_level: value })}>
+              <Select value={formData.experience_level} onValueChange={(value: ExperienceLevel) => setFormData({ ...formData, experience_level: value })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

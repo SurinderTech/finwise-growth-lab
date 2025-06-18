@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Clock, Trophy, CheckCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { Database } from '@/integrations/supabase/types';
 
 interface Question {
   question: string;
@@ -64,9 +65,25 @@ export const RealTimeQuiz: React.FC<QuizProps> = ({ quizId, onComplete }) => {
 
       if (error) throw error;
 
+      // Safely parse the questions JSON
+      let questions: Question[] = [];
+      if (data.questions) {
+        if (Array.isArray(data.questions)) {
+          questions = data.questions.map((q: any) => ({
+            question: q.question || '',
+            options: Array.isArray(q.options) ? q.options : [],
+            correct: typeof q.correct === 'number' ? q.correct : 0
+          }));
+        }
+      }
+
       const parsedQuiz: Quiz = {
-        ...data,
-        questions: Array.isArray(data.questions) ? data.questions as Question[] : []
+        id: data.id,
+        title: data.title,
+        questions: questions,
+        time_limit_minutes: data.time_limit_minutes || 30,
+        passing_score: data.passing_score || 70,
+        max_attempts: data.max_attempts || 3
       };
 
       setQuiz(parsedQuiz);
