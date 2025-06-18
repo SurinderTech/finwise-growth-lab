@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Shield, TrendingUp, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
@@ -18,13 +17,7 @@ const Auth = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    full_name: '',
-    age: '',
-    monthly_income: '',
-    occupation: '',
-    experience_level: 'beginner',
-    risk_tolerance: '5',
-    financial_goals: [] as string[]
+    full_name: ''
   });
 
   useEffect(() => {
@@ -38,13 +31,7 @@ const Auth = () => {
     setIsLoading(true);
 
     const { error } = await signUp(formData.email, formData.password, {
-      full_name: formData.full_name,
-      age: parseInt(formData.age),
-      monthly_income: parseFloat(formData.monthly_income),
-      occupation: formData.occupation,
-      experience_level: formData.experience_level,
-      risk_tolerance: parseInt(formData.risk_tolerance),
-      financial_goals: formData.financial_goals
+      full_name: formData.full_name
     });
 
     if (error) {
@@ -120,30 +107,15 @@ const Auth = () => {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="full_name">Full Name</Label>
-                    <Input
-                      id="full_name"
-                      value={formData.full_name}
-                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="age">Age</Label>
-                    <Input
-                      id="age"
-                      type="number"
-                      min="13"
-                      max="120"
-                      value={formData.age}
-                      onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                      required
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="full_name">Full Name</Label>
+                  <Input
+                    id="full_name"
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    required
+                  />
                 </div>
-
                 <div>
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -164,42 +136,6 @@ const Auth = () => {
                     required
                     minLength={6}
                   />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="monthly_income">Monthly Income (₹)</Label>
-                    <Input
-                      id="monthly_income"
-                      type="number"
-                      value={formData.monthly_income}
-                      onChange={(e) => setFormData({ ...formData, monthly_income: e.target.value })}
-                      placeholder="50000"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="occupation">Occupation</Label>
-                    <Input
-                      id="occupation"
-                      value={formData.occupation}
-                      onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                      placeholder="Software Engineer"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="experience_level">Financial Experience</Label>
-                  <Select value={formData.experience_level} onValueChange={(value) => setFormData({ ...formData, experience_level: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +20,9 @@ import Leaderboard from "./pages/Leaderboard";
 import Gamify from "./pages/Gamify";
 import FinancialCalculators from "./pages/FinancialCalculators";
 import GoalTracking from "./pages/GoalTracking";
+import UserOnboarding from "./pages/UserOnboarding";
+import FraudDetection from "./pages/FraudDetection";
+import SIPMutualFunds from "./pages/SIPMutualFunds";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,11 @@ const App = () => (
           <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/onboarding" element={
+                <ProtectedRoute>
+                  <UserOnboarding />
+                </ProtectedRoute>
+              } />
               <Route path="/" element={
                 <ProtectedRoute>
                   <Home />
@@ -92,6 +99,16 @@ const App = () => (
               <Route path="/goal-tracking" element={
                 <ProtectedRoute>
                   <GoalTracking />
+                </ProtectedRoute>
+              } />
+              <Route path="/fraud-detection" element={
+                <ProtectedRoute>
+                  <FraudDetection />
+                </ProtectedRoute>
+              } />
+              <Route path="/sip-mutual-funds" element={
+                <ProtectedRoute>
+                  <SIPMutualFunds />
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />

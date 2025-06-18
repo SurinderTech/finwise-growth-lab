@@ -8,6 +8,21 @@ import { Progress } from '@/components/ui/progress';
 import { Clock, Trophy, CheckCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
 
+interface Question {
+  question: string;
+  options: string[];
+  correct: number;
+}
+
+interface Quiz {
+  id: string;
+  title: string;
+  questions: Question[];
+  time_limit_minutes: number;
+  passing_score: number;
+  max_attempts: number;
+}
+
 interface QuizProps {
   quizId: string;
   onComplete: (score: number) => void;
@@ -15,9 +30,9 @@ interface QuizProps {
 
 export const RealTimeQuiz: React.FC<QuizProps> = ({ quizId, onComplete }) => {
   const { user } = useAuth();
-  const [quiz, setQuiz] = useState<any>(null);
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<any[]>([]);
+  const [answers, setAnswers] = useState<number[]>([]);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [score, setScore] = useState(0);
@@ -49,9 +64,14 @@ export const RealTimeQuiz: React.FC<QuizProps> = ({ quizId, onComplete }) => {
 
       if (error) throw error;
 
-      setQuiz(data);
-      setTimeLeft(data.time_limit_minutes * 60);
-      setAnswers(new Array(data.questions.length).fill(null));
+      const parsedQuiz: Quiz = {
+        ...data,
+        questions: Array.isArray(data.questions) ? data.questions as Question[] : []
+      };
+
+      setQuiz(parsedQuiz);
+      setTimeLeft(parsedQuiz.time_limit_minutes * 60);
+      setAnswers(new Array(parsedQuiz.questions.length).fill(-1));
     } catch (error: any) {
       console.error('Error fetching quiz:', error);
       toast.error('Error loading quiz');
@@ -70,7 +90,7 @@ export const RealTimeQuiz: React.FC<QuizProps> = ({ quizId, onComplete }) => {
   };
 
   const nextQuestion = () => {
-    if (currentQuestion < quiz.questions.length - 1) {
+    if (quiz && currentQuestion < quiz.questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       submitQuiz();
@@ -78,11 +98,13 @@ export const RealTimeQuiz: React.FC<QuizProps> = ({ quizId, onComplete }) => {
   };
 
   const submitQuiz = async () => {
+    if (!quiz) return;
+    
     setIsActive(false);
     
     // Calculate score
     let correctAnswers = 0;
-    quiz.questions.forEach((question: any, index: number) => {
+    quiz.questions.forEach((question: Question, index: number) => {
       if (answers[index] === question.correct) {
         correctAnswers++;
       }
@@ -157,7 +179,7 @@ export const RealTimeQuiz: React.FC<QuizProps> = ({ quizId, onComplete }) => {
         <CardContent className="text-center space-y-4">
           <div className="text-4xl font-bold">{score}%</div>
           <p>
-            You got {quiz.questions.filter((_: any, index: number) => answers[index] === quiz.questions[index].correct).length} out of {quiz.questions.length} questions correct
+            You got {quiz.questions.filter((_: Question, index: number) => answers[index] === quiz.questions[index].correct).length} out of {quiz.questions.length} questions correct
           </p>
           {score >= quiz.passing_score && (
             <div className="flex items-center justify-center gap-2 text-green-600">
@@ -228,7 +250,7 @@ export const RealTimeQuiz: React.FC<QuizProps> = ({ quizId, onComplete }) => {
         <Button 
           onClick={nextQuestion} 
           className="w-full"
-          disabled={answers[currentQuestion] === null}
+          disabled={answers[currentQuestion] === -1}
         >
           {currentQuestion === quiz.questions.length - 1 ? 'Submit Quiz' : 'Next Question'}
         </Button>
