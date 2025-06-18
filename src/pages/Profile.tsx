@@ -1,168 +1,268 @@
 
-import { useState } from 'react';
-import { Settings, User, Trophy, TrendingUp, Star, Edit } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { XPBar } from '@/components/XPBar';
 import { CoinDisplay } from '@/components/CoinDisplay';
+import { User, Settings, LogOut, Trophy, Target, TrendingUp } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Profile = () => {
-  const [userProfile] = useState({
-    name: 'Financial Warrior',
-    email: 'warrior@example.com',
-    avatar: '',
-    level: 3,
-    xp: 750,
-    totalXP: 2450,
-    coins: 2450,
-    rank: 'Silver Saver',
-    joinDate: 'March 2024',
-    streak: 12,
+  const { user, signOut } = useAuth();
+  const { profile, userStats, loading, updateProfile } = useProfile();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    age: '',
+    monthly_income: '',
+    occupation: '',
+    experience_level: 'beginner',
+    risk_tolerance: '5'
   });
 
-  const badges = [
-    { id: 'first-saver', name: '🏆 First Saver', unlocked: true, rarity: 'common' },
-    { id: 'quiz-master', name: '🧠 Quiz Pro', unlocked: true, rarity: 'rare' },
-    { id: 'budget-ninja', name: '🥷 Budget Ninja', unlocked: false, rarity: 'epic' },
-    { id: 'fraud-fighter', name: '🛡️ Fraud Fighter', unlocked: false, rarity: 'legendary' },
-  ];
+  React.useEffect(() => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        age: profile.age?.toString() || '',
+        monthly_income: profile.monthly_income?.toString() || '',
+        occupation: profile.occupation || '',
+        experience_level: profile.experience_level || 'beginner',
+        risk_tolerance: profile.risk_tolerance?.toString() || '5'
+      });
+    }
+  }, [profile]);
 
-  const stats = [
-    { label: 'Modules Completed', value: '8/12', icon: Trophy },
-    { label: 'Current Streak', value: `${userProfile.streak} days`, icon: Star },
-    { label: 'Total XP Earned', value: userProfile.totalXP.toLocaleString(), icon: TrendingUp },
-  ];
-
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case 'common': return 'bg-gray-100 text-gray-800';
-      case 'rare': return 'bg-blue-100 text-blue-800';
-      case 'epic': return 'bg-purple-100 text-purple-800';
-      case 'legendary': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const handleSave = async () => {
+    try {
+      await updateProfile({
+        full_name: formData.full_name,
+        age: parseInt(formData.age) || null,
+        monthly_income: parseFloat(formData.monthly_income) || null,
+        occupation: formData.occupation,
+        experience_level: formData.experience_level,
+        risk_tolerance: parseInt(formData.risk_tolerance)
+      });
+      setIsEditing(false);
+    } catch (error) {
+      toast.error('Failed to update profile');
     }
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  if (loading) {
+    return <div className="p-6 pb-20">Loading...</div>;
+  }
+
+  const nextLevelXP = (userStats?.level || 1) * 1000;
+  const currentXP = userStats?.total_xp || 0;
+  const currentLevelXP = currentXP % 1000;
+
   return (
-    <div className="min-h-screen pb-20 px-4 pt-6">
-      <div className="max-w-md mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-800">👤 Profile</h1>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Settings className="w-4 h-4" />
-            Settings
-          </Button>
+    <div className="p-6 pb-20">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2">👤 Your Profile</h1>
+          <p className="text-gray-600">Manage your financial journey</p>
         </div>
 
-        {/* Profile Card */}
-        <Card className="border-0 shadow-card bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Level</p>
+                  <p className="text-2xl font-bold">{userStats?.level || 1}</p>
+                </div>
+                <Trophy className="w-8 h-8 text-yellow-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Total XP</p>
+                  <p className="text-2xl font-bold">{userStats?.total_xp || 0}</p>
+                </div>
+                <Target className="w-8 h-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Streak</p>
+                  <p className="text-2xl font-bold">{userStats?.streak_days || 0} days</p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* XP Progress */}
+        <XPBar 
+          currentXP={currentLevelXP}
+          nextLevelXP={1000}
+          level={userStats?.level || 1}
+        />
+
+        {/* Coins Display */}
+        <Card>
           <CardContent className="p-6">
-            <div className="flex items-center gap-4 mb-4">
-              <Avatar className="w-16 h-16 border-2 border-white/30">
-                <AvatarImage src={userProfile.avatar} />
-                <AvatarFallback className="bg-white/20 text-white text-xl font-bold">
-                  {userProfile.name.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-xl font-bold">{userProfile.name}</h2>
-                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1">
-                    <Edit className="w-3 h-3" />
-                  </Button>
-                </div>
-                <p className="opacity-90 text-sm">{userProfile.email}</p>
-                <Badge className="bg-white/20 text-white border-white/30 mt-1">
-                  {userProfile.rank}
-                </Badge>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="text-center">
-                <div className="text-2xl font-bold">Level {userProfile.level}</div>
-                <div className="text-xs opacity-75">Since {userProfile.joinDate}</div>
-              </div>
-              <CoinDisplay coins={userProfile.coins} />
+            <div className="flex items-center justify-center">
+              <CoinDisplay coins={userStats?.coins || 0} animated />
             </div>
           </CardContent>
         </Card>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={index} className="border-0 shadow-card">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-600">{stat.label}</p>
-                      <p className="text-xl font-bold text-gray-800">{stat.value}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Badge Collection */}
-        <Card className="border-0 shadow-card">
-          <CardContent className="p-4">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-              🏆 Badge Collection
-              <span className="text-sm font-normal text-gray-500">
-                ({badges.filter(b => b.unlocked).length}/{badges.length})
-              </span>
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              {badges.map((badge) => (
-                <div
-                  key={badge.id}
-                  className={`p-3 rounded-xl border-2 transition-all ${
-                    badge.unlocked
-                      ? 'border-yellow-200 bg-yellow-50'
-                      : 'border-gray-200 bg-gray-50 opacity-60'
-                  }`}
+        {/* Profile Information */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Profile Information
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+            >
+              {isEditing ? 'Save' : 'Edit'}
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  value={user?.email || ''}
+                  disabled
+                />
+              </div>
+              <div>
+                <Label htmlFor="full_name">Full Name</Label>
+                <Input
+                  id="full_name"
+                  value={formData.full_name}
+                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  value={formData.age}
+                  onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="occupation">Occupation</Label>
+                <Input
+                  id="occupation"
+                  value={formData.occupation}
+                  onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="monthly_income">Monthly Income (₹)</Label>
+                <Input
+                  id="monthly_income"
+                  type="number"
+                  value={formData.monthly_income}
+                  onChange={(e) => setFormData({ ...formData, monthly_income: e.target.value })}
+                  disabled={!isEditing}
+                />
+              </div>
+              <div>
+                <Label htmlFor="experience_level">Experience Level</Label>
+                <Select 
+                  value={formData.experience_level} 
+                  onValueChange={(value) => setFormData({ ...formData, experience_level: value })}
+                  disabled={!isEditing}
                 >
-                  <div className="text-center">
-                    <div className={`text-2xl mb-1 ${badge.unlocked ? '' : 'grayscale'}`}>
-                      {badge.name.split(' ')[0]}
-                    </div>
-                    <div className={`text-xs font-medium mb-1 ${badge.unlocked ? 'text-gray-800' : 'text-gray-400'}`}>
-                      {badge.name.substring(2)}
-                    </div>
-                    <Badge className={`text-xs ${getRarityColor(badge.rarity)}`}>
-                      {badge.rarity}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">Beginner</SelectItem>
+                    <SelectItem value="intermediate">Intermediate</SelectItem>
+                    <SelectItem value="advanced">Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="risk_tolerance">Risk Tolerance (1-10)</Label>
+              <Select 
+                value={formData.risk_tolerance} 
+                onValueChange={(value) => setFormData({ ...formData, risk_tolerance: value })}
+                disabled={!isEditing}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                    <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
 
-        {/* Quick Actions */}
-        <div className="space-y-3">
-          <Button variant="outline" className="w-full justify-start gap-3 h-12">
-            <User className="w-5 h-5" />
-            Edit Profile
-          </Button>
-          <Button variant="outline" className="w-full justify-start gap-3 h-12">
-            <Settings className="w-5 h-5" />
-            App Settings
-          </Button>
-          <Button variant="outline" className="w-full justify-start gap-3 h-12 text-red-600 border-red-200 hover:bg-red-50">
-            <span>🚪</span>
-            Sign Out
-          </Button>
-        </div>
+        {/* Badges */}
+        {userStats?.badges && Array.isArray(userStats.badges) && userStats.badges.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Badges Earned</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {userStats.badges.map((badge: any, index: number) => (
+                  <Badge key={index} variant="secondary">
+                    {badge.name || badge}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Sign Out */}
+        <Card>
+          <CardContent className="p-6">
+            <Button 
+              onClick={handleSignOut}
+              variant="destructive"
+              className="w-full"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

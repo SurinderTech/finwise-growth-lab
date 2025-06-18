@@ -4,12 +4,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import Home from "./pages/Home";
 import Learn from "./pages/Learn";
 import Tools from "./pages/Tools";
 import Quests from "./pages/Quests";
 import Profile from "./pages/Profile";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ExpenseTracker from "./pages/ExpenseTracker";
 import SavingGoals from "./pages/SavingGoals";
@@ -26,26 +29,77 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/learn" element={<Learn />} />
-            <Route path="/tools" element={<Tools />} />
-            <Route path="/quests" element={<Quests />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/expense-tracker" element={<ExpenseTracker />} />
-            <Route path="/saving-goals" element={<SavingGoals />} />
-            <Route path="/investment-lab" element={<InvestmentLab />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/gamify" element={<Gamify />} />
-            <Route path="/financial-calculators" element={<FinancialCalculators />} />
-            <Route path="/goal-tracking" element={<GoalTracking />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <BottomNavigation />
-        </div>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              } />
+              <Route path="/learn" element={
+                <ProtectedRoute>
+                  <Learn />
+                </ProtectedRoute>
+              } />
+              <Route path="/tools" element={
+                <ProtectedRoute>
+                  <Tools />
+                </ProtectedRoute>
+              } />
+              <Route path="/quests" element={
+                <ProtectedRoute>
+                  <Quests />
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+              <Route path="/expense-tracker" element={
+                <ProtectedRoute>
+                  <ExpenseTracker />
+                </ProtectedRoute>
+              } />
+              <Route path="/saving-goals" element={
+                <ProtectedRoute>
+                  <SavingGoals />
+                </ProtectedRoute>
+              } />
+              <Route path="/investment-lab" element={
+                <ProtectedRoute>
+                  <InvestmentLab />
+                </ProtectedRoute>
+              } />
+              <Route path="/leaderboard" element={
+                <ProtectedRoute>
+                  <Leaderboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/gamify" element={
+                <ProtectedRoute>
+                  <Gamify />
+                </ProtectedRoute>
+              } />
+              <Route path="/financial-calculators" element={
+                <ProtectedRoute>
+                  <FinancialCalculators />
+                </ProtectedRoute>
+              } />
+              <Route path="/goal-tracking" element={
+                <ProtectedRoute>
+                  <GoalTracking />
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <BottomNavigation />
+          </div>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

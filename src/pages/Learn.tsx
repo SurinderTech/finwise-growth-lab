@@ -1,153 +1,222 @@
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { LearningModule } from '@/components/LearningModule';
-import { Badge } from '@/components/ui/badge';
-import { BookOpen, TrendingUp, Shield, Calculator } from 'lucide-react';
+import { RealTimeQuiz } from '@/components/RealTimeQuiz';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BookOpen, Trophy, Video, CheckCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Learn = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  
-  const categories = [
-    { id: 'all', label: 'All Topics', icon: BookOpen },
-    { id: 'budgeting', label: 'Budgeting', icon: Calculator },
-    { id: 'investing', label: 'Investing', icon: TrendingUp },
-    { id: 'security', label: 'Security', icon: Shield },
-  ];
+  const { user } = useAuth();
+  const [modules, setModules] = useState<any[]>([]);
+  const [userProgress, setUserProgress] = useState<any[]>([]);
+  const [selectedQuiz, setSelectedQuiz] = useState<string | null>(null);
+  const [quizzes, setQuizzes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const modules = [
-    {
-      id: 'budgeting-basics',
-      title: '💰 Budgeting Basics',
-      description: 'Learn the 50-30-20 rule and create your first budget plan with real expense tracking.',
-      duration: '15 min',
-      difficulty: 'beginner' as const,
-      completed: false,
-      progress: 0,
-      xpReward: 100,
-      category: 'budgeting',
-    },
-    {
-      id: 'smart-saving',
-      title: '🏦 Smart Saving Strategies',
-      description: 'Discover automated saving techniques and set achievable financial goals.',
-      duration: '20 min',
-      difficulty: 'beginner' as const,
-      completed: true,
-      progress: 100,
-      xpReward: 150,
-      category: 'budgeting',
-    },
-    {
-      id: 'investment-simulator',
-      title: '📈 Investment Lab',
-      description: 'Practice with ₹10,000 virtual money in our stock market simulator.',
-      duration: '30 min',
-      difficulty: 'intermediate' as const,
-      completed: false,
-      progress: 45,
-      xpReward: 250,
-      category: 'investing',
-    },
-    {
-      id: 'tax-planning',
-      title: '📋 Tax Planning 101',
-      description: 'Calculate your tax liability and discover 80C, 80D saving opportunities.',
-      duration: '25 min',
-      difficulty: 'intermediate' as const,
-      completed: false,
-      progress: 0,
-      xpReward: 200,
-      category: 'budgeting',
-    },
-    {
-      id: 'fraud-detection',
-      title: '🛡️ Fraud Fighter Training',
-      description: 'Learn to spot fake SMS, calls, and phishing attempts through interactive scenarios.',
-      duration: '18 min',
-      difficulty: 'beginner' as const,
-      completed: false,
-      progress: 0,
-      xpReward: 180,
-      category: 'security',
-    },
-  ];
+  useEffect(() => {
+    fetchLearningModules();
+    fetchUserProgress();
+    fetchQuizzes();
+  }, [user]);
 
-  const filteredModules = selectedCategory === 'all' 
-    ? modules 
-    : modules.filter(module => module.category === selectedCategory);
+  const fetchLearningModules = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('learning_modules')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index');
 
-  const handleStartModule = (moduleId: string) => {
-    console.log(`Starting module: ${moduleId}`);
-    // Here you would navigate to the specific module content
+      if (error) throw error;
+      setModules(data || []);
+    } catch (error: any) {
+      console.error('Error fetching modules:', error);
+      toast.error('Error loading learning modules');
+    }
   };
 
-  const completedCount = modules.filter(m => m.completed).length;
-  const totalXP = modules.filter(m => m.completed).reduce((sum, m) => sum + m.xpReward, 0);
+  const fetchUserProgress = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+      setUserProgress(data || []);
+    } catch (error: any) {
+      console.error('Error fetching progress:', error);
+    }
+  };
+
+  const fetchQuizzes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .select('*');
+
+      if (error) throw error;
+      setQuizzes(data || []);
+      setLoading(false);
+    } catch (error: any) {
+      console.error('Error fetching quizzes:', error);
+      setLoading(false);
+    }
+  };
+
+  const startModule = async (moduleId: string) => {
+    try {
+      // Check if progress exists
+      const existingProgress = userProgress.find(p => p.module_id === moduleId);
+      
+      if (!existingProgress) {
+        await supabase
+          .from('user_progress')
+          .insert({
+            user_id: user?.id,
+            module_id: moduleId,
+            progress_percentage: 25
+          });
+      } else {
+        await supabase
+          .from('user_progress')
+          .update({
+            progress_percentage: Math.min(existingProgress.progress_percentage + 25, 100),
+            completed_at: existingProgress.progress_percentage >= 75 ? new Date().toISOString() : null
+          })
+          .eq('id', existingProgress.id);
+      }
+
+      // Award XP for starting/continuing module
+      const module = modules.find(m => m.id === moduleId);
+      if (module) {
+        const { data: userStats } = await supabase
+          .from('user_stats')
+          .select('total_xp')
+          .eq('user_id', user?.id)
+          .single();
+
+        if (userStats) {
+          await supabase
+            .from('user_stats')
+            .update({
+              total_xp: userStats.total_xp + 25,
+              last_activity_date: new Date().toISOString().split('T')[0]
+            })
+            .eq('user_id', user?.id);
+        }
+
+        toast.success(`Learning progress updated! +25 XP`);
+      }
+
+      fetchUserProgress();
+    } catch (error: any) {
+      console.error('Error updating progress:', error);
+      toast.error('Error updating progress');
+    }
+  };
+
+  const getModuleProgress = (moduleId: string) => {
+    const progress = userProgress.find(p => p.module_id === moduleId);
+    return {
+      completed: progress?.completed_at != null,
+      progress: progress?.progress_percentage || 0
+    };
+  };
+
+  const enrichedModules = modules.map(module => ({
+    ...module,
+    ...getModuleProgress(module.id)
+  }));
+
+  if (loading) {
+    return <div className="p-6 pb-20">Loading...</div>;
+  }
+
+  if (selectedQuiz) {
+    return (
+      <div className="p-6 pb-20">
+        <RealTimeQuiz 
+          quizId={selectedQuiz} 
+          onComplete={() => setSelectedQuiz(null)} 
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen pb-20 px-4 pt-6">
-      <div className="max-w-md mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            🎓 Learn & Grow
-          </h1>
-          <p className="text-gray-600">Master financial skills through interactive lessons</p>
+    <div className="p-6 pb-20">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2">📚 Financial Education</h1>
+          <p className="text-gray-600">Master money management through interactive learning</p>
         </div>
 
-        {/* Progress Stats */}
-        <div className="bg-white rounded-xl p-4 shadow-card">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-green-600">{completedCount}</div>
-              <div className="text-xs text-gray-500">Completed</div>
+        <Tabs defaultValue="modules" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="modules" className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              Learning Modules
+            </TabsTrigger>
+            <TabsTrigger value="quizzes" className="flex items-center gap-2">
+              <Trophy className="w-4 h-4" />
+              Live Quizzes
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="modules" className="space-y-6 mt-6">
+            <div className="grid gap-6">
+              {enrichedModules.map((module) => (
+                <LearningModule
+                  key={module.id}
+                  module={{
+                    id: module.id,
+                    title: module.title,
+                    description: module.description || '',
+                    duration: `${module.duration_minutes} min`,
+                    difficulty: module.difficulty,
+                    completed: module.completed,
+                    progress: module.progress,
+                    xpReward: module.xp_reward
+                  }}
+                  onStart={startModule}
+                />
+              ))}
             </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-600">{modules.length - completedCount}</div>
-              <div className="text-xs text-gray-500">Remaining</div>
+          </TabsContent>
+
+          <TabsContent value="quizzes" className="space-y-6 mt-6">
+            <div className="grid gap-4">
+              {quizzes.map((quiz) => (
+                <Card key={quiz.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>{quiz.title}</span>
+                      <Trophy className="w-5 h-5 text-yellow-500" />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between items-center text-sm text-gray-600 mb-4">
+                      <span>{quiz.questions?.length || 0} Questions</span>
+                      <span>{quiz.time_limit_minutes} Minutes</span>
+                      <span>Passing: {quiz.passing_score}%</span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedQuiz(quiz.id)}
+                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Start Quiz
+                    </button>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-            <div>
-              <div className="text-2xl font-bold text-purple-600">{totalXP}</div>
-              <div className="text-xs text-gray-500">XP Earned</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Category Filter */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {categories.map(({ id, label, icon: Icon }) => (
-            <Badge
-              key={id}
-              variant={selectedCategory === id ? "default" : "outline"}
-              className={`cursor-pointer whitespace-nowrap flex items-center gap-1 py-2 px-3 ${
-                selectedCategory === id 
-                  ? 'bg-green-500 text-white hover:bg-green-600' 
-                  : 'hover:bg-gray-100'
-              }`}
-              onClick={() => setSelectedCategory(id)}
-            >
-              <Icon className="w-3 h-3" />
-              {label}
-            </Badge>
-          ))}
-        </div>
-
-        {/* Learning Modules */}
-        <div className="space-y-4">
-          {filteredModules.map((module) => (
-            <LearningModule
-              key={module.id}
-              module={module}
-              onStart={handleStartModule}
-            />
-          ))}
-        </div>
-
-        {filteredModules.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No modules found in this category.</p>
-          </div>
-        )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
