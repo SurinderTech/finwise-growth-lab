@@ -12,6 +12,7 @@ interface Notification {
   type: 'expense' | 'goal' | 'investment' | 'fraud' | 'achievement';
   created_at: string;
   read: boolean;
+  user_id: string;
 }
 
 export const NotificationSystem: React.FC = () => {
@@ -58,36 +59,16 @@ export const NotificationSystem: React.FC = () => {
 
     try {
       const { data, error } = await supabase
-        .from('notifications')
+        .from('notifications' as any)
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
 
       if (error) throw error;
-      setNotifications(data || []);
+      setNotifications((data as Notification[]) || []);
     } catch (error) {
       console.error('Error fetching notifications:', error);
-    }
-  };
-
-  const sendNotification = async (title: string, message: string, type: Notification['type']) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: user.id,
-          title,
-          message,
-          type,
-          read: false
-        });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error sending notification:', error);
     }
   };
 
@@ -103,7 +84,7 @@ export const useNotifications = () => {
 
     try {
       const { error } = await supabase
-        .from('notifications')
+        .from('notifications' as any)
         .insert({
           user_id: user.id,
           title,
