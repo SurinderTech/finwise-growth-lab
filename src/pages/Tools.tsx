@@ -1,8 +1,9 @@
 
-import { Calculator, Target, TrendingUp, PieChart } from 'lucide-react';
+import { Calculator, Target, TrendingUp, PieChart, Settings } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { InteractiveFinancialGames } from '@/components/InteractiveFinancialGames';
 
 const Tools = () => {
   const navigate = useNavigate();
@@ -10,8 +11,8 @@ const Tools = () => {
   const tools = [
     {
       id: 'expense-tracker',
-      title: '💳 Expense Tracker',
-      description: 'Track your daily expenses and visualize spending patterns',
+      title: '💳 Real-Time Expense Tracker',
+      description: 'Track expenses with live budget alerts and notifications',
       icon: PieChart,
       color: 'from-blue-500 to-blue-600',
       comingSoon: false,
@@ -19,8 +20,8 @@ const Tools = () => {
     },
     {
       id: 'saving-goals',
-      title: '🎯 Saving Goals',
-      description: 'Set and track your financial goals with progress rings',
+      title: '🎯 Smart Saving Goals',
+      description: 'AI-powered goal tracking with progress notifications',
       icon: Target,
       color: 'from-green-500 to-green-600',
       comingSoon: false,
@@ -28,8 +29,8 @@ const Tools = () => {
     },
     {
       id: 'investment-lab',
-      title: '📊 Investment Lab',
-      description: 'Practice investing with virtual portfolio simulation',
+      title: '📊 Live Investment Lab',
+      description: 'Real-time market simulation with risk management',
       icon: TrendingUp,
       color: 'from-purple-500 to-purple-600',
       comingSoon: false,
@@ -37,30 +38,21 @@ const Tools = () => {
     },
     {
       id: 'financial-calculators',
-      title: '🧮 Financial Calculators',
-      description: 'Interactive tools for financial planning and simulation',
+      title: '🧮 Smart Calculators',
+      description: 'Advanced financial calculators with real-time insights',
       icon: Calculator,
       color: 'from-orange-500 to-orange-600',
       comingSoon: false,
       route: '/financial-calculators'
     },
     {
-      id: 'goal-tracking',
-      title: '🎯 Goal Tracking',
-      description: 'Advanced goal setting and monitoring system',
-      icon: Target,
-      color: 'from-pink-500 to-pink-600',
+      id: 'settings',
+      title: '⚙️ App Settings',
+      description: 'Customize notifications, budgets, and preferences',
+      icon: Settings,
+      color: 'from-gray-500 to-gray-600',
       comingSoon: false,
-      route: '/goal-tracking'
-    },
-    {
-      id: 'gamify',
-      title: '🎮 Financial Games',
-      description: 'Learn finance through interactive games and simulations',
-      icon: Calculator,
-      color: 'from-indigo-500 to-indigo-600',
-      comingSoon: false,
-      route: '/gamify'
+      route: '/settings'
     }
   ];
 
@@ -73,32 +65,21 @@ const Tools = () => {
 
   return (
     <div className="min-h-screen pb-20 px-4 pt-6">
-      <div className="max-w-md mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            🛠️ Financial Tools
+            🛠️ Financial Tools & Games
           </h1>
-          <p className="text-gray-600">Practical tools to manage your money</p>
+          <p className="text-gray-600">Hands-on tools and interactive games for financial learning</p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="bg-white rounded-xl p-4 shadow-card">
-          <h3 className="font-semibold text-gray-800 mb-3">📊 Your Financial Snapshot</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <div className="text-xl font-bold text-green-600">₹45,200</div>
-              <div className="text-xs text-gray-500">Total Saved</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-blue-600">₹8,450</div>
-              <div className="text-xs text-gray-500">This Month</div>
-            </div>
-          </div>
-        </div>
+        {/* Interactive Games Section */}
+        <InteractiveFinancialGames />
 
         {/* Tools Grid */}
         <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-gray-800">Real-Time Tools</h2>
           {tools.map((tool) => {
             const Icon = tool.icon;
             return (
@@ -135,14 +116,6 @@ const Tools = () => {
               </Card>
             );
           })}
-        </div>
-
-        {/* Pro Tip */}
-        <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-xl p-4 text-center">
-          <h3 className="font-bold text-gray-800 mb-2">💡 Pro Tip</h3>
-          <p className="text-sm text-gray-700">
-            Use tools regularly to build better financial habits and earn bonus XP!
-          </p>
         </div>
       </div>
     </div>

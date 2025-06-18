@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { NotificationSystem } from "@/components/NotificationSystem";
 import Home from "./pages/Home";
 import Learn from "./pages/Learn";
 import Tools from "./pages/Tools";
@@ -23,6 +25,7 @@ import GoalTracking from "./pages/GoalTracking";
 import UserOnboarding from "./pages/UserOnboarding";
 import FraudDetection from "./pages/FraudDetection";
 import SIPMutualFunds from "./pages/SIPMutualFunds";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -30,10 +33,11 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
-      <Sonner />
+      <Sonner position="top-right" />
       <AuthProvider>
         <BrowserRouter>
           <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+            <NotificationSystem />
             <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route path="/onboarding" element={
@@ -109,6 +113,11 @@ const App = () => (
               <Route path="/sip-mutual-funds" element={
                 <ProtectedRoute>
                   <SIPMutualFunds />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Settings />
                 </ProtectedRoute>
               } />
               <Route path="*" element={<NotFound />} />

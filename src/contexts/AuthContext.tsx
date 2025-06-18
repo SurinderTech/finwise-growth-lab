@@ -32,22 +32,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth event:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Check if user profile is complete after successful sign up
+        // Only check profile completeness on successful sign in, not signup
         if (event === 'SIGNED_IN' && session?.user) {
+          // Use setTimeout to avoid blocking the auth flow
           setTimeout(async () => {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('full_name, age, occupation')
-              .eq('id', session.user.id)
-              .single();
-            
-            if (!profile?.full_name || !profile?.age || !profile?.occupation) {
-              // Redirect to onboarding if profile is incomplete
-              window.location.href = '/onboarding';
+            try {
+              const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('full_name, age, occupation')
+                .eq('id', session.user.id)
+                .single();
+              
+              console.log('Profile check:', profile, error);
+              
+              // Only redirect if profile is truly incomplete
+              if (!error && (!profile?.full_name || !profile?.age || !profile?.occupation)) {
+                console.log('Redirecting to onboarding...');
+                window.location.href = '/onboarding';
+              }
+            } catch (error) {
+              console.error('Error checking profile:', error);
             }
           }, 1000);
         }
