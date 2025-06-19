@@ -6,8 +6,13 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import Home from '@/pages/Home';
 import Settings from '@/pages/Settings';
 import ExpenseTracker from '@/pages/ExpenseTracker';
+import Learn from '@/pages/Learn';
+import Tools from '@/pages/Tools';
+import Quests from '@/pages/Quests';
+import Profile from '@/pages/Profile';
 import { Toaster } from '@/components/ui/toaster';
 import { NotificationSystem } from '@/components/NotificationSystem';
+import { BottomNavigation } from '@/components/BottomNavigation';
 
 const queryClient = new QueryClient();
 
@@ -19,9 +24,14 @@ function App() {
           <div className="min-h-screen bg-gray-50">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/learn" element={<Learn />} />
+              <Route path="/tools" element={<Tools />} />
+              <Route path="/quests" element={<Quests />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/expense-tracker" element={<ExpenseTracker />} />
             </Routes>
+            <BottomNavigation />
             <NotificationSystem />
           </div>
           <Toaster />

@@ -62,31 +62,25 @@ const Home = () => {
         navigate('/expense-tracker');
         break;
       case 'investment':
-        navigate('/investment-lab');
+        navigate('/tools');
         break;
       case 'saved':
-        navigate('/saving-goals');
+        navigate('/tools');
         break;
       case 'goals':
-        navigate('/goal-tracking');
+        navigate('/quests');
         break;
       case 'leaderboard':
-        navigate('/leaderboard');
+        navigate('/profile');
         break;
       case 'fraud':
-        navigate('/gamify');
-        break;
-      case 'tutorials':
-        navigate('/gamify');
-        break;
-      case 'assessments':
         navigate('/learn');
         break;
-      case 'calculators':
-        navigate('/financial-calculators');
+      case 'tutorials':
+        navigate('/learn');
         break;
-      case 'gamify':
-        navigate('/gamify');
+      case 'knowledge':
+        navigate('/learn');
         break;
       default:
         console.log(`Clicked: ${type}`);
