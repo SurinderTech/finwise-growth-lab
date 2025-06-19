@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bell } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -59,14 +58,16 @@ export const NotificationSystem: React.FC = () => {
 
     try {
       const { data, error } = await supabase
-        .from('notifications' as any)
+        .from('notifications')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
 
       if (error) throw error;
-      setNotifications((data as Notification[]) || []);
+      if (data) {
+        setNotifications(data as Notification[]);
+      }
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
@@ -84,7 +85,7 @@ export const useNotifications = () => {
 
     try {
       const { error } = await supabase
-        .from('notifications' as any)
+        .from('notifications')
         .insert({
           user_id: user.id,
           title,
