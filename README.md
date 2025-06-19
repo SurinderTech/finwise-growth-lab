@@ -1,18 +1,44 @@
-# Welcome to your Lovable project
+# Welcome 
+<h1 align="center">Hi 👋, I'm Your Surinder </h1>
+<h3 align="center">A passionate developer and open-source enthusiast</h3>
+
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com/?lines=Welcome+to+my+GitHub!;I'm+a+Full-Stack+Developer;Love+to+build+and+break+things&center=true&width=500&height=45" />
+</p>
 
 ## Project info
+<h1 align="center">💸 Financial Warrior 💂‍♂️</h1>
+<h3 align="center">A Modern Fintech App for Financial Safety, Awareness, and Smart Planning</h3>
 
-**URL**: https://lovable.dev/projects/f2286593-0f70-44a2-afb3-0bcb384b3c8c
+<p align="center">
+  <img src="https://img.shields.io/github/languages/top/your-username/financial-warrior?style=for-the-badge" />
+  <img src="https://img.shields.io/github/stars/your-username/financial-warrior?style=for-the-badge" />
+  <img src="https://img.shields.io/github/license/your-username/financial-warrior?style=for-the-badge" />
+</p>
 
-## How can I edit this code?
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com/?lines=Welcome+to+Financial+Warrior;Smart+Finance+Made+Secure;Track+Save+Learn+Invest&center=true&width=500&height=45" />
+</p>
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🧠 Features Overview
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f2286593-0f70-44a2-afb3-0bcb384b3c8c) and start prompting.
+```plaintext
+✔ Fraud Detection
+✔ Real-Time Alerts
+✔ Financial Education
+✔ Budget Planning
+✔ Smart Saving
+✔ Safe Investing
+✔ Phishing/Vishing Protection
 
-Changes made via Lovable will be committed automatically to this repo.
+
+
+
+
+
+
 
 **Use your preferred IDE**
 
@@ -61,13 +87,5 @@ This project is built with:
 - Tailwind CSS
 
 ## How can I deploy this project?
+on vercel , render.
 
-Simply open [Lovable](https://lovable.dev/projects/f2286593-0f70-44a2-afb3-0bcb384b3c8c) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
