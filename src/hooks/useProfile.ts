@@ -8,12 +8,11 @@ export const useProfile = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [userStats, setUserStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
-      fetchProfile();
-      fetchUserStats();
+      fetchData();
     } else {
       setProfile(null);
       setUserStats(null);
@@ -21,8 +20,25 @@ export const useProfile = () => {
     }
   }, [user]);
 
-  const fetchProfile = async () => {
+  const fetchData = async () => {
     if (!user?.id) return;
+    
+    setLoading(true);
+    try {
+      // Fetch both profile and stats concurrently
+      const [profileResult, statsResult] = await Promise.all([
+        fetchProfile(),
+        fetchUserStats()
+      ]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProfile = async () => {
+    if (!user?.id) return null;
 
     try {
       console.log('Fetching profile for user:', user.id);
@@ -34,21 +50,23 @@ export const useProfile = () => {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Profile fetch error:', error);
-        throw error;
+        return null;
       }
 
       console.log('Profile data fetched:', data);
       setProfile(data);
+      return data;
     } catch (error: any) {
       console.error('Error fetching profile:', error);
       if (error.code !== 'PGRST116') {
         toast.error('Error loading profile');
       }
+      return null;
     }
   };
 
   const fetchUserStats = async () => {
-    if (!user?.id) return;
+    if (!user?.id) return null;
 
     try {
       console.log('Fetching user stats for user:', user.id);
@@ -60,18 +78,18 @@ export const useProfile = () => {
 
       if (error && error.code !== 'PGRST116') {
         console.error('User stats fetch error:', error);
-        throw error;
+        return null;
       }
 
       console.log('User stats data fetched:', data);
       setUserStats(data);
+      return data;
     } catch (error: any) {
       console.error('Error fetching user stats:', error);
       if (error.code !== 'PGRST116') {
         toast.error('Error loading user statistics');
       }
-    } finally {
-      setLoading(false);
+      return null;
     }
   };
 
@@ -100,6 +118,7 @@ export const useProfile = () => {
       console.log('Profile updated successfully:', data);
       setProfile(data);
       toast.success('Profile updated successfully');
+      return data;
     } catch (error: any) {
       console.error('Error updating profile:', error);
       toast.error('Error updating profile: ' + error.message);
@@ -112,10 +131,6 @@ export const useProfile = () => {
     userStats,
     loading,
     updateProfile,
-    refetch: () => {
-      setLoading(true);
-      fetchProfile();
-      fetchUserStats();
-    }
+    refetch: fetchData
   };
 };

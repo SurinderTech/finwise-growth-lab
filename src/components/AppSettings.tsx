@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,13 +8,15 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Settings, Bell, Shield, Palette, Database, LogOut, Loader2 } from 'lucide-react';
+import { Settings, Bell, Shield, Palette, Database, LogOut, Loader2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export const AppSettings: React.FC = () => {
-  const { user, signOut } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const { user, signOut, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [signingOut, setSigningOut] = useState(false);
   const [settings, setSettings] = useState({
     notifications: {
       budgetAlerts: true,
@@ -52,27 +55,49 @@ export const AppSettings: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      setLoading(true);
+      setSigningOut(true);
       await signOut();
+      navigate('/');
     } catch (error) {
       console.error('Error signing out:', error);
       toast.error('Error signing out');
     } finally {
-      setLoading(false);
+      setSigningOut(false);
     }
   };
 
-  if (!user) {
+  const handleBackToProfile = () => {
+    navigate('/profile');
+  };
+
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </div>
     );
+  }
+
+  if (!user && !authLoading) {
+    navigate('/auth');
+    return null;
   }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-2 mb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleBackToProfile}
+          className="mr-2"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Back
+        </Button>
         <Settings className="w-6 h-6" />
         <h1 className="text-2xl font-bold">Settings</h1>
       </div>
@@ -305,43 +330,15 @@ export const AppSettings: React.FC = () => {
               onClick={handleLogout}
               variant="destructive"
               className="w-full"
-              disabled={loading}
+              disabled={signingOut}
             >
-              {loading ? (
+              {signingOut ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <LogOut className="w-4 h-4 mr-2" />
               )}
               Sign Out
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Course Upload Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload Learning Content</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-gray-600">
-              As an admin, you can upload courses and learning materials for users. Contact support to get admin access.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="p-4">
-                <h4 className="font-semibold mb-2">Video Courses</h4>
-                <p className="text-sm text-gray-600">Upload educational videos with quizzes</p>
-              </Card>
-              <Card className="p-4">
-                <h4 className="font-semibold mb-2">Interactive Modules</h4>
-                <p className="text-sm text-gray-600">Create step-by-step learning paths</p>
-              </Card>
-              <Card className="p-4">
-                <h4 className="font-semibold mb-2">Assessment Tests</h4>
-                <p className="text-sm text-gray-600">Build knowledge assessment quizzes</p>
-              </Card>
-            </div>
           </div>
         </CardContent>
       </Card>
