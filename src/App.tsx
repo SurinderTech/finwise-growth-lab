@@ -10,6 +10,7 @@ import Learn from '@/pages/Learn';
 import Tools from '@/pages/Tools';
 import Quests from '@/pages/Quests';
 import Profile from '@/pages/Profile';
+import UserOnboarding from '@/pages/UserOnboarding';
 import { Toaster } from '@/components/ui/toaster';
 import { NotificationSystem } from '@/components/NotificationSystem';
 import { BottomNavigation } from '@/components/BottomNavigation';
@@ -30,6 +31,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/expense-tracker" element={<ExpenseTracker />} />
+              <Route path="/onboarding" element={<UserOnboarding />} />
             </Routes>
             <BottomNavigation />
             <NotificationSystem />

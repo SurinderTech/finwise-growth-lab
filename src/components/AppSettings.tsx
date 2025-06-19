@@ -8,12 +8,13 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Settings, Bell, Shield, Palette, Database, LogOut } from 'lucide-react';
+import { Settings, Bell, Shield, Palette, Database, LogOut, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 export const AppSettings: React.FC = () => {
   const { user, signOut } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState({
     notifications: {
       budgetAlerts: true,
@@ -51,8 +52,24 @@ export const AppSettings: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    await signOut();
+    try {
+      setLoading(true);
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast.error('Error signing out');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -277,7 +294,7 @@ export const AppSettings: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
-                <div className="font-medium">{user?.email}</div>
+                <div className="font-medium">{user?.email || 'No email'}</div>
                 <div className="text-sm text-gray-500">Account Email</div>
               </div>
               <Badge variant="secondary">Verified</Badge>
@@ -289,8 +306,13 @@ export const AppSettings: React.FC = () => {
               onClick={handleLogout}
               variant="destructive"
               className="w-full"
+              disabled={loading}
             >
-              <LogOut className="w-4 h-4 mr-2" />
+              {loading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <LogOut className="w-4 h-4 mr-2" />
+              )}
               Sign Out
             </Button>
           </div>
@@ -319,6 +341,7 @@ export const AppSettings: React.FC = () => {
               <Card className="p-4">
                 <h4 className="font-semibold mb-2">Assessment Tests</h4>
                 <p className="text-sm text-gray-600">Build knowledge assessment quizzes</p>
+              </p>
               </Card>
             </div>
           </div>

@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from 'react';
 import { XPBar } from '@/components/XPBar';
 import { CoinDisplay } from '@/components/CoinDisplay';
 import { DailyTip } from '@/components/DailyTip';
 import { ActiveQuest } from '@/components/ActiveQuest';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, TrendingUp, TrendingDown, Shield, BookOpen, Brain, Award, Target, AlertTriangle } from 'lucide-react';
+import { ArrowRight, TrendingUp, Shield, BookOpen, Brain, Award, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
@@ -57,6 +58,7 @@ const Home = () => {
   };
 
   const handleCardClick = (type: string) => {
+    console.log(`Navigating to: ${type}`);
     switch (type) {
       case 'expenses':
         navigate('/expense-tracker');
@@ -121,7 +123,7 @@ const Home = () => {
         <div className="grid grid-cols-2 gap-4">
           {/* This Month Expenses */}
           <div 
-            className="bg-white rounded-xl p-4 shadow-card cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
             onClick={() => handleCardClick('expenses')}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -134,7 +136,7 @@ const Home = () => {
 
           {/* This Month Investment */}
           <div 
-            className="bg-white rounded-xl p-4 shadow-card cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
             onClick={() => handleCardClick('investment')}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -147,7 +149,7 @@ const Home = () => {
 
           {/* Total Saved */}
           <div 
-            className="bg-white rounded-xl p-4 shadow-card cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
             onClick={() => handleCardClick('saved')}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -160,7 +162,7 @@ const Home = () => {
 
           {/* Goals Progress */}
           <div 
-            className="bg-white rounded-xl p-4 shadow-card cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
             onClick={() => handleCardClick('goals')}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -176,7 +178,7 @@ const Home = () => {
         <div className="grid grid-cols-2 gap-4">
           {/* Leaderboard Position */}
           <div 
-            className="bg-white rounded-xl p-4 shadow-card cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
             onClick={() => handleCardClick('leaderboard')}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -189,7 +191,7 @@ const Home = () => {
 
           {/* Fraud Awareness */}
           <div 
-            className="bg-white rounded-xl p-4 shadow-card cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
             onClick={() => handleCardClick('fraud')}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -202,7 +204,7 @@ const Home = () => {
 
           {/* Interactive Tutorials */}
           <div 
-            className="bg-white rounded-xl p-4 shadow-card cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
             onClick={() => handleCardClick('tutorials')}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -215,7 +217,7 @@ const Home = () => {
 
           {/* Knowledge Assessment */}
           <div 
-            className="bg-white rounded-xl p-4 shadow-card cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
             onClick={() => handleCardClick('knowledge')}
           >
             <div className="flex items-center gap-2 mb-2">
@@ -228,7 +230,7 @@ const Home = () => {
         </div>
 
         {/* AI-Driven Insights */}
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-4 text-white shadow-card">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-4 text-white shadow-sm">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="w-5 h-5" />
             <h3 className="font-semibold">🤖 AI Insights</h3>
