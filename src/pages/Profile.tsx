@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-  const { user, signOut, loading: authLoading } = useAuth();
+  const { user, signOut } = useAuth();
   const { profile, userStats, loading: profileLoading, updateProfile } = useProfile();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
@@ -81,22 +81,19 @@ const Profile = () => {
     navigate('/settings');
   };
 
-  // Show loading only when auth is still loading
-  if (authLoading) {
+  // Show login prompt if no user
+  if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center justify-center min-h-screen p-6">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
+          <h1 className="text-2xl font-bold mb-4">Welcome to Your Profile</h1>
+          <p className="text-gray-600 mb-6">Please sign in to view your profile</p>
+          <Button onClick={() => navigate('/auth')}>
+            Sign In
+          </Button>
         </div>
       </div>
     );
-  }
-
-  // Redirect to auth if no user
-  if (!user && !authLoading) {
-    navigate('/auth');
-    return null;
   }
 
   const nextLevelXP = (userStats?.level || 1) * 1000;
@@ -144,11 +141,7 @@ const Profile = () => {
                 <div>
                   <p className="text-sm text-gray-600">Level</p>
                   <p className="text-2xl font-bold">
-                    {profileLoading ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                    ) : (
-                      userStats?.level || 1
-                    )}
+                    {userStats?.level || 1}
                   </p>
                 </div>
                 <Trophy className="w-8 h-8 text-yellow-500" />
@@ -162,11 +155,7 @@ const Profile = () => {
                 <div>
                   <p className="text-sm text-gray-600">Total XP</p>
                   <p className="text-2xl font-bold">
-                    {profileLoading ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                    ) : (
-                      userStats?.total_xp || 0
-                    )}
+                    {userStats?.total_xp || 0}
                   </p>
                 </div>
                 <Target className="w-8 h-8 text-blue-500" />
@@ -180,11 +169,7 @@ const Profile = () => {
                 <div>
                   <p className="text-sm text-gray-600">Streak</p>
                   <p className="text-2xl font-bold">
-                    {profileLoading ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                    ) : (
-                      `${userStats?.streak_days || 0} days`
-                    )}
+                    {`${userStats?.streak_days || 0} days`}
                   </p>
                 </div>
                 <TrendingUp className="w-8 h-8 text-green-500" />
@@ -194,23 +179,17 @@ const Profile = () => {
         </div>
 
         {/* XP Progress */}
-        {!profileLoading && (
-          <XPBar 
-            currentXP={currentLevelXP}
-            nextLevelXP={1000}
-            level={userStats?.level || 1}
-          />
-        )}
+        <XPBar 
+          currentXP={currentLevelXP}
+          nextLevelXP={1000}
+          level={userStats?.level || 1}
+        />
 
         {/* Coins Display */}
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-center">
-              {profileLoading ? (
-                <Loader2 className="w-8 h-8 animate-spin" />
-              ) : (
-                <CoinDisplay coins={userStats?.coins || 0} animated />
-              )}
+              <CoinDisplay coins={userStats?.coins || 0} animated />
             </div>
           </CardContent>
         </Card>
@@ -226,7 +205,7 @@ const Profile = () => {
               variant="outline"
               size="sm"
               onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-              disabled={saving || profileLoading}
+              disabled={saving}
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -241,97 +220,97 @@ const Profile = () => {
                 <span className="ml-2">Loading profile...</span>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    value={user?.email || ''}
-                    disabled
-                  />
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      value={user?.email || ''}
+                      disabled
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="full_name">Full Name</Label>
+                    <Input
+                      id="full_name"
+                      value={formData.full_name}
+                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="age">Age</Label>
+                    <Input
+                      id="age"
+                      type="number"
+                      value={formData.age}
+                      onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="occupation">Occupation</Label>
+                    <Input
+                      id="occupation"
+                      value={formData.occupation}
+                      onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="monthly_income">Monthly Income (₹)</Label>
+                    <Input
+                      id="monthly_income"
+                      type="number"
+                      value={formData.monthly_income}
+                      onChange={(e) => setFormData({ ...formData, monthly_income: e.target.value })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="experience_level">Experience Level</Label>
+                    <Select 
+                      value={formData.experience_level} 
+                      onValueChange={(value) => setFormData({ ...formData, experience_level: value })}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="beginner">Beginner</SelectItem>
+                        <SelectItem value="intermediate">Intermediate</SelectItem>
+                        <SelectItem value="advanced">Advanced</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
                 <div>
-                  <Label htmlFor="full_name">Full Name</Label>
-                  <Input
-                    id="full_name"
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="age">Age</Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    value={formData.age}
-                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="occupation">Occupation</Label>
-                  <Input
-                    id="occupation"
-                    value={formData.occupation}
-                    onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="monthly_income">Monthly Income (₹)</Label>
-                  <Input
-                    id="monthly_income"
-                    type="number"
-                    value={formData.monthly_income}
-                    onChange={(e) => setFormData({ ...formData, monthly_income: e.target.value })}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="experience_level">Experience Level</Label>
+                  <Label htmlFor="risk_tolerance">Risk Tolerance (1-10)</Label>
                   <Select 
-                    value={formData.experience_level} 
-                    onValueChange={(value) => setFormData({ ...formData, experience_level: value })}
+                    value={formData.risk_tolerance} 
+                    onValueChange={(value) => setFormData({ ...formData, risk_tolerance: value })}
                     disabled={!isEditing}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
+                      {[1,2,3,4,5,6,7,8,9,10].map(num => (
+                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-            )}
-
-            {!profileLoading && (
-              <div>
-                <Label htmlFor="risk_tolerance">Risk Tolerance (1-10)</Label>
-                <Select 
-                  value={formData.risk_tolerance} 
-                  onValueChange={(value) => setFormData({ ...formData, risk_tolerance: value })}
-                  disabled={!isEditing}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1,2,3,4,5,6,7,8,9,10].map(num => (
-                      <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              </>
             )}
           </CardContent>
         </Card>
 
         {/* Badges */}
-        {!profileLoading && userStats?.badges && Array.isArray(userStats.badges) && userStats.badges.length > 0 && (
+        {userStats?.badges && Array.isArray(userStats.badges) && userStats.badges.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle>Badges Earned</CardTitle>

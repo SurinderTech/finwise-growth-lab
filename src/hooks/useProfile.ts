@@ -11,85 +11,56 @@ export const useProfile = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       fetchData();
     } else {
       setProfile(null);
       setUserStats(null);
       setLoading(false);
     }
-  }, [user]);
+  }, [user?.id]);
 
   const fetchData = async () => {
     if (!user?.id) return;
     
     setLoading(true);
     try {
+      console.log('Fetching profile and stats for user:', user.id);
+      
       // Fetch both profile and stats concurrently
       const [profileResult, statsResult] = await Promise.all([
-        fetchProfile(),
-        fetchUserStats()
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('user_stats')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle()
       ]);
+
+      console.log('Profile result:', profileResult);
+      console.log('Stats result:', statsResult);
+
+      if (profileResult.error && profileResult.error.code !== 'PGRST116') {
+        console.error('Profile fetch error:', profileResult.error);
+      } else {
+        setProfile(profileResult.data);
+      }
+
+      if (statsResult.error && statsResult.error.code !== 'PGRST116') {
+        console.error('User stats fetch error:', statsResult.error);
+      } else {
+        setUserStats(statsResult.data);
+      }
+
     } catch (error) {
       console.error('Error fetching data:', error);
+      toast.error('Error loading profile data');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchProfile = async () => {
-    if (!user?.id) return null;
-
-    try {
-      console.log('Fetching profile for user:', user.id);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Profile fetch error:', error);
-        return null;
-      }
-
-      console.log('Profile data fetched:', data);
-      setProfile(data);
-      return data;
-    } catch (error: any) {
-      console.error('Error fetching profile:', error);
-      if (error.code !== 'PGRST116') {
-        toast.error('Error loading profile');
-      }
-      return null;
-    }
-  };
-
-  const fetchUserStats = async () => {
-    if (!user?.id) return null;
-
-    try {
-      console.log('Fetching user stats for user:', user.id);
-      const { data, error } = await supabase
-        .from('user_stats')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('User stats fetch error:', error);
-        return null;
-      }
-
-      console.log('User stats data fetched:', data);
-      setUserStats(data);
-      return data;
-    } catch (error: any) {
-      console.error('Error fetching user stats:', error);
-      if (error.code !== 'PGRST116') {
-        toast.error('Error loading user statistics');
-      }
-      return null;
     }
   };
 
