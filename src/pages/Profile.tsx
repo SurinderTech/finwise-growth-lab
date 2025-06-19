@@ -10,13 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { XPBar } from '@/components/XPBar';
 import { CoinDisplay } from '@/components/CoinDisplay';
-import { User, Settings, LogOut, Trophy, Target, TrendingUp } from 'lucide-react';
+import { User, Settings, LogOut, Trophy, Target, TrendingUp, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Profile = () => {
   const { user, signOut } = useAuth();
   const { profile, userStats, loading, updateProfile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
     age: '',
@@ -41,6 +42,7 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
+      setSaving(true);
       await updateProfile({
         full_name: formData.full_name,
         age: parseInt(formData.age) || null,
@@ -50,17 +52,45 @@ const Profile = () => {
         risk_tolerance: parseInt(formData.risk_tolerance)
       });
       setIsEditing(false);
+      toast.success('Profile updated successfully!');
     } catch (error) {
+      console.error('Save error:', error);
       toast.error('Failed to update profile');
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast.error('Error signing out');
+    }
   };
 
+  // Show loading while auth is loading
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Show loading while profile data is being fetched
   if (loading) {
-    return <div className="p-6 pb-20">Loading...</div>;
+    return (
+      <div className="p-6 pb-20">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading your profile...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const nextLevelXP = (userStats?.level || 1) * 1000;
@@ -141,7 +171,11 @@ const Profile = () => {
               variant="outline"
               size="sm"
               onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+              disabled={saving}
             >
+              {saving ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : null}
               {isEditing ? 'Save' : 'Edit'}
             </Button>
           </CardHeader>

@@ -27,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileChecked, setProfileChecked] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener
@@ -37,9 +38,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setLoading(false);
         
-        // Only check profile completeness on successful sign in, not signup
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Use setTimeout to avoid blocking the auth flow
+        // Only check profile on SIGNED_IN event and if not already checked
+        if (event === 'SIGNED_IN' && session?.user && !profileChecked) {
           setTimeout(async () => {
             try {
               const { data: profile, error } = await supabase
@@ -50,15 +50,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               
               console.log('Profile check:', profile, error);
               
-              // Only redirect if profile is truly incomplete
-              if (!error && (!profile?.full_name || !profile?.age || !profile?.occupation)) {
-                console.log('Redirecting to onboarding...');
-                window.location.href = '/onboarding';
+              // Only redirect if profile is incomplete AND we're not already on onboarding
+              if (!error && profile && (!profile.full_name || !profile.age || !profile.occupation)) {
+                if (window.location.pathname !== '/onboarding') {
+                  console.log('Redirecting to onboarding...');
+                  window.location.href = '/onboarding';
+                }
               }
+              setProfileChecked(true);
             } catch (error) {
               console.error('Error checking profile:', error);
+              setProfileChecked(true);
             }
           }, 1000);
+        }
+
+        // Reset profile check on sign out
+        if (event === 'SIGNED_OUT') {
+          setProfileChecked(false);
         }
       }
     );
@@ -71,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [profileChecked]);
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
@@ -115,6 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    setProfileChecked(false);
     toast.success('Signed out successfully');
   };
 

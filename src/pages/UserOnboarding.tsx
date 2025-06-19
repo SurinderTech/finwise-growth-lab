@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
@@ -19,6 +18,7 @@ const UserOnboarding = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
     age: '',
@@ -68,28 +68,51 @@ const UserOnboarding = () => {
   };
 
   const handleSubmit = async () => {
+    if (!user?.id) {
+      toast.error('User not found. Please sign in again.');
+      return;
+    }
+
     try {
-      const { error } = await supabase
+      setSaving(true);
+      console.log('Submitting onboarding data:', formData);
+
+      const profileData = {
+        id: user.id,
+        full_name: formData.full_name,
+        age: parseInt(formData.age),
+        occupation: formData.occupation,
+        monthly_income: parseFloat(formData.monthly_income),
+        experience_level: formData.experience_level,
+        risk_tolerance: parseInt(formData.risk_tolerance),
+        financial_goals: formData.financial_goals,
+        phone_number: formData.phone_number,
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
         .from('profiles')
-        .update({
-          full_name: formData.full_name,
-          age: parseInt(formData.age),
-          occupation: formData.occupation,
-          monthly_income: parseFloat(formData.monthly_income),
-          experience_level: formData.experience_level,
-          risk_tolerance: parseInt(formData.risk_tolerance),
-          financial_goals: formData.financial_goals,
-          phone_number: formData.phone_number
-        })
-        .eq('id', user?.id);
+        .upsert(profileData)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile creation error:', error);
+        throw error;
+      }
 
+      console.log('Profile created successfully:', data);
       toast.success('Profile setup completed successfully!');
-      navigate('/');
+      
+      // Small delay to ensure data is saved before redirect
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
     } catch (error: any) {
       console.error('Error updating profile:', error);
-      toast.error('Error updating profile');
+      toast.error('Error updating profile: ' + error.message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -258,17 +281,20 @@ const UserOnboarding = () => {
             <Button
               variant="outline"
               onClick={handleBack}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || saving}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
             <Button
               onClick={handleNext}
-              disabled={!isStepValid()}
+              disabled={!isStepValid() || saving}
             >
+              {saving ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : null}
               {currentStep === totalSteps ? 'Complete Setup' : 'Next'}
-              {currentStep !== totalSteps && <ArrowRight className="w-4 h-4 ml-2" />}
+              {currentStep !== totalSteps && !saving && <ArrowRight className="w-4 h-4 ml-2" />}
             </Button>
           </div>
         </CardContent>

@@ -14,65 +14,96 @@ export const useProfile = () => {
     if (user) {
       fetchProfile();
       fetchUserStats();
+    } else {
+      setProfile(null);
+      setUserStats(null);
+      setLoading(false);
     }
   }, [user]);
 
   const fetchProfile = async () => {
+    if (!user?.id) return;
+
     try {
+      console.log('Fetching profile for user:', user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
+        .eq('id', user.id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
+        console.error('Profile fetch error:', error);
         throw error;
       }
 
-      if (data) {
-        setProfile(data);
-      }
+      console.log('Profile data fetched:', data);
+      setProfile(data);
     } catch (error: any) {
       console.error('Error fetching profile:', error);
-      toast.error('Error loading profile');
+      if (error.code !== 'PGRST116') {
+        toast.error('Error loading profile');
+      }
     }
   };
 
   const fetchUserStats = async () => {
+    if (!user?.id) return;
+
     try {
+      console.log('Fetching user stats for user:', user.id);
       const { data, error } = await supabase
         .from('user_stats')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .single();
 
       if (error && error.code !== 'PGRST116') {
+        console.error('User stats fetch error:', error);
         throw error;
       }
 
-      if (data) {
-        setUserStats(data);
-      }
-      setLoading(false);
+      console.log('User stats data fetched:', data);
+      setUserStats(data);
     } catch (error: any) {
       console.error('Error fetching user stats:', error);
+      if (error.code !== 'PGRST116') {
+        toast.error('Error loading user statistics');
+      }
+    } finally {
       setLoading(false);
     }
   };
 
   const updateProfile = async (updates: any) => {
+    if (!user?.id) {
+      throw new Error('No user ID available');
+    }
+
     try {
-      const { error } = await supabase
+      console.log('Updating profile with:', updates);
+      const { data, error } = await supabase
         .from('profiles')
-        .upsert({ id: user?.id, ...updates });
+        .upsert({ 
+          id: user.id, 
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile update error:', error);
+        throw error;
+      }
 
-      await fetchProfile();
+      console.log('Profile updated successfully:', data);
+      setProfile(data);
       toast.success('Profile updated successfully');
     } catch (error: any) {
       console.error('Error updating profile:', error);
-      toast.error('Error updating profile');
+      toast.error('Error updating profile: ' + error.message);
+      throw error;
     }
   };
 
@@ -82,6 +113,7 @@ export const useProfile = () => {
     loading,
     updateProfile,
     refetch: () => {
+      setLoading(true);
       fetchProfile();
       fetchUserStats();
     }
