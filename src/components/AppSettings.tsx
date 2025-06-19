@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -341,7 +340,6 @@ export const AppSettings: React.FC = () => {
               <Card className="p-4">
                 <h4 className="font-semibold mb-2">Assessment Tests</h4>
                 <p className="text-sm text-gray-600">Build knowledge assessment quizzes</p>
-              </p>
               </Card>
             </div>
           </div>
