@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      budgets: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          id: string
+          month: number
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          id?: string
+          month: number
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          id?: string
+          month?: number
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           amount: number
@@ -18,6 +51,9 @@ export type Database = {
           description: string | null
           id: string
           is_recurring: boolean | null
+          notes: string | null
+          payment_method: string | null
+          receipt_image_url: string | null
           recurring_frequency: string | null
           user_id: string | null
         }
@@ -29,6 +65,9 @@ export type Database = {
           description?: string | null
           id?: string
           is_recurring?: boolean | null
+          notes?: string | null
+          payment_method?: string | null
+          receipt_image_url?: string | null
           recurring_frequency?: string | null
           user_id?: string | null
         }
@@ -40,6 +79,9 @@ export type Database = {
           description?: string | null
           id?: string
           is_recurring?: boolean | null
+          notes?: string | null
+          payment_method?: string | null
+          receipt_image_url?: string | null
           recurring_frequency?: string | null
           user_id?: string | null
         }
