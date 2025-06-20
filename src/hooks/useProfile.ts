@@ -58,7 +58,6 @@ export const useProfile = () => {
 
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Error loading profile data');
     } finally {
       setLoading(false);
     }

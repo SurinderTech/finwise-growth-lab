@@ -10,6 +10,7 @@ import Learn from '@/pages/Learn';
 import Tools from '@/pages/Tools';
 import Quests from '@/pages/Quests';
 import Profile from '@/pages/Profile';
+import Auth from '@/pages/Auth';
 import UserOnboarding from '@/pages/UserOnboarding';
 import { Toaster } from '@/components/ui/toaster';
 import { NotificationSystem } from '@/components/NotificationSystem';
@@ -25,6 +26,7 @@ function App() {
           <div className="min-h-screen bg-gray-50">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/learn" element={<Learn />} />
               <Route path="/tools" element={<Tools />} />
               <Route path="/quests" element={<Quests />} />

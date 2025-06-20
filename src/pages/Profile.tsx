@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const { profile, userStats, loading: profileLoading, updateProfile } = useProfile();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
@@ -80,6 +80,16 @@ const Profile = () => {
   const handleSettingsClick = () => {
     navigate('/settings');
   };
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+        <span className="ml-2">Loading...</span>
+      </div>
+    );
+  }
 
   // Show login prompt if no user
   if (!user) {

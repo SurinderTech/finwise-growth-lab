@@ -30,56 +30,86 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profileChecked, setProfileChecked] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+    
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Error getting session:', error);
+        }
+        
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    getInitialSession();
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth event:', event, session?.user?.id);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+        
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
         
         // Only check profile on SIGNED_IN event and if not already checked
-        if (event === 'SIGNED_IN' && session?.user && !profileChecked) {
+        if (event === 'SIGNED_IN' && session?.user && !profileChecked && mounted) {
           setTimeout(async () => {
             try {
               const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('full_name, age, occupation')
                 .eq('id', session.user.id)
-                .single();
+                .maybeSingle();
               
               console.log('Profile check:', profile, error);
               
               // Only redirect if profile is incomplete AND we're not already on onboarding
               if (!error && profile && (!profile.full_name || !profile.age || !profile.occupation)) {
-                if (window.location.pathname !== '/onboarding') {
+                const currentPath = window.location.pathname;
+                if (currentPath !== '/onboarding' && mounted) {
                   console.log('Redirecting to onboarding...');
                   window.location.href = '/onboarding';
                 }
               }
-              setProfileChecked(true);
+              
+              if (mounted) {
+                setProfileChecked(true);
+              }
             } catch (error) {
               console.error('Error checking profile:', error);
-              setProfileChecked(true);
+              if (mounted) {
+                setProfileChecked(true);
+              }
             }
           }, 1000);
         }
 
         // Reset profile check on sign out
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT' && mounted) {
           setProfileChecked(false);
         }
       }
     );
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [profileChecked]);
 
   const signUp = async (email: string, password: string, userData: any) => {
@@ -123,9 +153,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setProfileChecked(false);
-    toast.success('Signed out successfully');
+    try {
+      await supabase.auth.signOut();
+      setProfileChecked(false);
+      toast.success('Signed out successfully');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast.error('Error signing out');
+    }
   };
 
   const value = {
