@@ -22,39 +22,83 @@ const Auth = () => {
 
   useEffect(() => {
     if (user && !loading) {
+      console.log('User authenticated, redirecting to home...');
       navigate('/');
     }
   }, [user, loading, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    const { error } = await signUp(formData.email, formData.password, {
-      full_name: formData.full_name
-    });
-
-    if (error) {
-      toast.error(error);
+    
+    if (!formData.email || !formData.password || !formData.full_name) {
+      toast.error('Please fill in all fields');
+      return;
     }
-    setIsLoading(false);
+
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    setIsLoading(true);
+    console.log('Attempting sign up with:', { email: formData.email, full_name: formData.full_name });
+
+    try {
+      const { error } = await signUp(formData.email, formData.password, {
+        full_name: formData.full_name
+      });
+
+      if (error) {
+        console.error('Sign up error:', error);
+        toast.error(error);
+      } else {
+        console.log('Sign up successful');
+        toast.success('Account created successfully! Please check your email to verify your account.');
+      }
+    } catch (err) {
+      console.error('Sign up exception:', err);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    const { error } = await signIn(formData.email, formData.password);
-    if (error) {
-      toast.error(error);
+    
+    if (!formData.email || !formData.password) {
+      toast.error('Please fill in all fields');
+      return;
     }
-    setIsLoading(false);
+
+    setIsLoading(true);
+    console.log('Attempting sign in with:', { email: formData.email });
+
+    try {
+      const { error } = await signIn(formData.email, formData.password);
+      
+      if (error) {
+        console.error('Sign in error:', error);
+        toast.error(error);
+      } else {
+        console.log('Sign in successful');
+        // Navigation will happen in useEffect when user state updates
+      }
+    } catch (err) {
+      console.error('Sign in exception:', err);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p>Loading...</p>
+        </div>
       </div>
     );
   }
@@ -79,23 +123,25 @@ const Auth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="signin-email">Email</Label>
                   <Input
-                    id="email"
+                    id="signin-email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="signin-password">Password</Label>
                   <Input
-                    id="password"
+                    id="signin-password"
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
@@ -108,33 +154,36 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div>
-                  <Label htmlFor="full_name">Full Name</Label>
+                  <Label htmlFor="signup-name">Full Name</Label>
                   <Input
-                    id="full_name"
+                    id="signup-name"
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="signup-email">Email</Label>
                   <Input
-                    id="email"
+                    id="signup-email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="signup-password">Password</Label>
                   <Input
-                    id="password"
+                    id="signup-password"
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
                     minLength={6}
+                    disabled={isLoading}
                   />
                 </div>
 
