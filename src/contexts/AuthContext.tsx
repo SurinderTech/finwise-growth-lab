@@ -115,11 +115,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, userData: any) => {
     try {
       console.log('Starting sign up process...');
+      
+      // Use the current origin for redirect
+      const redirectUrl = `${window.location.origin}/`;
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: redirectUrl,
           data: userData
         }
       });
@@ -128,6 +132,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Sign up error:', error);
+        
+        // Handle specific Supabase error codes
+        if (error.code === 'over_email_send_rate_limit') {
+          return { error: 'Too many sign-up attempts. Please wait before trying again.' };
+        } else if (error.code === 'signup_disabled') {
+          return { error: 'Sign-ups are currently disabled. Please contact support.' };
+        } else if (error.message.includes('already registered')) {
+          return { error: 'This email is already registered. Please sign in instead.' };
+        }
+        
         return { error: error.message };
       }
 
@@ -135,7 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error: null };
     } catch (error: any) {
       console.error('Sign up exception:', error);
-      return { error: error.message || 'An unexpected error occurred' };
+      return { error: error.message || 'An unexpected error occurred during sign up' };
     }
   };
 
@@ -151,6 +165,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Sign in error:', error);
+        
+        // Handle specific Supabase error codes
+        if (error.code === 'invalid_credentials') {
+          return { error: 'Invalid email or password' };
+        } else if (error.code === 'email_not_confirmed') {
+          return { error: 'Please check your email and confirm your account' };
+        } else if (error.code === 'too_many_requests') {
+          return { error: 'Too many sign-in attempts. Please wait before trying again.' };
+        }
+        
         return { error: error.message };
       }
 
@@ -158,7 +182,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error: null };
     } catch (error: any) {
       console.error('Sign in exception:', error);
-      return { error: error.message || 'An unexpected error occurred' };
+      return { error: error.message || 'An unexpected error occurred during sign in' };
     }
   };
 

@@ -7,57 +7,130 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Shield, TrendingUp, BookOpen } from 'lucide-react';
+import { Loader2, Shield, TrendingUp, BookOpen, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Auth = () => {
   const { signUp, signIn, user, loading } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('signin');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     full_name: ''
   });
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    full_name: '',
+    general: ''
+  });
 
   useEffect(() => {
     if (user && !loading) {
       console.log('User authenticated, redirecting to home...');
-      navigate('/');
+      navigate('/', { replace: true });
     }
   }, [user, loading, navigate]);
+
+  const validateForm = (isSignUp = false) => {
+    const newErrors = {
+      email: '',
+      password: '',
+      full_name: '',
+      general: ''
+    };
+
+    // Email validation
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (isSignUp && formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters long';
+    }
+
+    // Full name validation for sign up
+    if (isSignUp && !formData.full_name.trim()) {
+      newErrors.full_name = 'Full name is required';
+    }
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error !== '');
+  };
+
+  const resetForm = () => {
+    setFormData({
+      email: '',
+      password: '',
+      full_name: ''
+    });
+    setErrors({
+      email: '',
+      password: '',
+      full_name: '',
+      general: ''
+    });
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.email || !formData.password || !formData.full_name) {
-      toast.error('Please fill in all fields');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+    if (!validateForm(true)) {
       return;
     }
 
     setIsLoading(true);
-    console.log('Attempting sign up with:', { email: formData.email, full_name: formData.full_name });
+    setErrors(prev => ({ ...prev, general: '' }));
 
     try {
+      console.log('Attempting sign up with:', { 
+        email: formData.email, 
+        full_name: formData.full_name 
+      });
+
       const { error } = await signUp(formData.email, formData.password, {
         full_name: formData.full_name
       });
 
       if (error) {
         console.error('Sign up error:', error);
-        toast.error(error);
+        
+        // Handle specific error types
+        if (error.includes('rate limit') || error.includes('security purposes')) {
+          setErrors(prev => ({ 
+            ...prev, 
+            general: 'Too many sign-up attempts. Please wait a few minutes before trying again.' 
+          }));
+          toast.error('Please wait before trying again');
+        } else if (error.includes('already registered')) {
+          setErrors(prev => ({ 
+            ...prev, 
+            email: 'This email is already registered. Try signing in instead.' 
+          }));
+          setActiveTab('signin');
+          toast.error('Email already registered');
+        } else {
+          setErrors(prev => ({ ...prev, general: error }));
+          toast.error(error);
+        }
       } else {
         console.log('Sign up successful');
-        toast.success('Account created successfully! Please check your email to verify your account.');
+        toast.success('Account created! Please check your email to verify your account.');
+        resetForm();
+        // Don't switch tabs automatically, let user check email
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Sign up exception:', err);
-      toast.error('An unexpected error occurred');
+      const errorMessage = err?.message || 'An unexpected error occurred';
+      setErrors(prev => ({ ...prev, general: errorMessage }));
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -66,29 +139,57 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.email || !formData.password) {
-      toast.error('Please fill in all fields');
+    if (!validateForm(false)) {
       return;
     }
 
     setIsLoading(true);
-    console.log('Attempting sign in with:', { email: formData.email });
+    setErrors(prev => ({ ...prev, general: '' }));
 
     try {
+      console.log('Attempting sign in with:', { email: formData.email });
+
       const { error } = await signIn(formData.email, formData.password);
       
       if (error) {
         console.error('Sign in error:', error);
-        toast.error(error);
+        
+        if (error.includes('Invalid login credentials')) {
+          setErrors(prev => ({ 
+            ...prev, 
+            general: 'Invalid email or password. Please check your credentials.' 
+          }));
+          toast.error('Invalid credentials');
+        } else if (error.includes('Email not confirmed')) {
+          setErrors(prev => ({ 
+            ...prev, 
+            general: 'Please check your email and click the confirmation link.' 
+          }));
+          toast.error('Please verify your email first');
+        } else {
+          setErrors(prev => ({ ...prev, general: error }));
+          toast.error(error);
+        }
       } else {
         console.log('Sign in successful');
+        toast.success('Successfully signed in!');
         // Navigation will happen in useEffect when user state updates
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Sign in exception:', err);
-      toast.error('An unexpected error occurred');
+      const errorMessage = err?.message || 'An unexpected error occurred';
+      setErrors(prev => ({ ...prev, general: errorMessage }));
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear field-specific errors when user starts typing
+    if (errors[field as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -114,11 +215,18 @@ const Auth = () => {
           <p className="text-gray-600">Master your finances with gamified learning</p>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
+
+            {errors.general && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-500" />
+                <p className="text-sm text-red-700">{errors.general}</p>
+              </div>
+            )}
 
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
@@ -128,10 +236,12 @@ const Auth = () => {
                     id="signin-email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
                     required
                     disabled={isLoading}
+                    className={errors.email ? 'border-red-500' : ''}
                   />
+                  {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
                 </div>
                 <div>
                   <Label htmlFor="signin-password">Password</Label>
@@ -139,10 +249,12 @@ const Auth = () => {
                     id="signin-password"
                     type="password"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
                     required
                     disabled={isLoading}
+                    className={errors.password ? 'border-red-500' : ''}
                   />
+                  {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -158,10 +270,12 @@ const Auth = () => {
                   <Input
                     id="signup-name"
                     value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    onChange={(e) => handleInputChange('full_name', e.target.value)}
                     required
                     disabled={isLoading}
+                    className={errors.full_name ? 'border-red-500' : ''}
                   />
+                  {errors.full_name && <p className="text-sm text-red-500 mt-1">{errors.full_name}</p>}
                 </div>
                 <div>
                   <Label htmlFor="signup-email">Email</Label>
@@ -169,10 +283,12 @@ const Auth = () => {
                     id="signup-email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
                     required
                     disabled={isLoading}
+                    className={errors.email ? 'border-red-500' : ''}
                   />
+                  {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
                 </div>
                 <div>
                   <Label htmlFor="signup-password">Password</Label>
@@ -180,11 +296,14 @@ const Auth = () => {
                     id="signup-password"
                     type="password"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
                     required
                     minLength={6}
                     disabled={isLoading}
+                    className={errors.password ? 'border-red-500' : ''}
                   />
+                  {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
+                  <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
