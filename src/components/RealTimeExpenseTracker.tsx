@@ -41,7 +41,9 @@ export const RealTimeExpenseTracker: React.FC = () => {
       )
       .subscribe();
 
-    return () => supabase.removeChannel(channel);
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const checkBudgetAlerts = async (expense: any) => {
@@ -82,13 +84,13 @@ export const RealTimeExpenseTracker: React.FC = () => {
         sendNotification(
           'Budget Exceeded!',
           `You've exceeded your ${expense.category} budget by ₹${(totalSpent - budget.amount).toFixed(0)}`,
-          'budget'
+          'expense'
         );
       } else if (percentage >= 80) {
         sendNotification(
           'Budget Alert!',
           `You've used ${percentage.toFixed(0)}% of your ${expense.category} budget`,
-          'budget'
+          'expense'
         );
       }
     } catch (error) {
