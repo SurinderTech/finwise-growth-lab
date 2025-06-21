@@ -1,0 +1,18 @@
+
+{
+  "scripts": {
+    "cap:init": "npx cap init",
+    "cap:add:ios": "npx cap add ios",
+    "cap:add:android": "npx cap add android", 
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:sync:ios": "npm run build && npx cap sync ios",
+    "cap:sync:android": "npm run build && npx cap sync android",
+    "cap:run:ios": "npx cap run ios",
+    "cap:run:android": "npx cap run android",
+    "cap:open:ios": "npx cap open ios",
+    "cap:open:android": "npx cap open android",
+    "mobile:build": "npm run build && npx cap sync",
+    "mobile:dev:ios": "npm run build && npx cap sync ios && npx cap run ios",
+    "mobile:dev:android": "npm run build && npx cap sync android && npx cap run android"
+  }
+}
