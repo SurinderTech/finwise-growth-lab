@@ -22,7 +22,7 @@
 
 ---
 
-## 🧠 Features Overview
+# 🧠 Features Overview
 
 ```plaintext
 ✔ Fraud Detection
